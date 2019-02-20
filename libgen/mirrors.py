@@ -189,7 +189,7 @@ class GenLibRusEc(Mirror):
         attrs['id'] = cells[0].text
         attrs['authors'] = cells[1].text.strip()[:25]
 
-        # The 2nd cell contains title information
+        # The 2nd cell contains pages information
         # In best case it will have: Series - Title - Edition - ISBN
         # But everything except the title is optional
         # and this optional text shows up in green font
@@ -246,7 +246,56 @@ class LibGenPw(Mirror):
         raise NotImplementedError
 
 
-MIRRORS = {'http://gen.lib.rus.ec': GenLibRusEc, 'https://libgen.pw': LibGenPw}
+class AmbryPw(Mirror):
+    search_url = "https://ambry.pw/search?q="
+
+    def __init__(self, search_term: str) -> None:
+        super().__init__(self.search_url)
+        self.search_term = search_term
+
+    def extract(self, page: BeautifulSoup) -> List[Publication]:
+        """
+        Extract all the publications info in a given result page.
+
+        :param page: result page as an BeautifulSoup4 object
+        :returns: list of Publication
+        """
+        rows = page.find_all(attrs={'class': 'search-results-list__item'})
+        results = []
+        for row in rows[1:]:
+            cells = row.find_all('td')
+            attrs = self.extract_attributes(cells)
+            results.append(Publication(attrs))
+        return results
+
+    def extract_attributes(self, cells: BeautifulSoup) -> Dict[str, Any]:
+        attrs = {}
+        attrs['author'] = cells.find(
+            class_="search-results-list__item-author").text
+        attrs['title'] = cells.find(
+            class_="search-results-list__item-title").a.text[:80]
+        attrs['year'] = cells.find(class_="search-results-list__item-year")
+        attrs['pages'] = cells.find(
+            class_="search-results-list__item-pages").text
+        attrs['language'] = cells.find(
+            class_="search-results-list__item-language").text[:10]
+        attrs['size'] = cells.find(
+            class_="search-results-list__item-size").text
+        attrs['type'] = cells.find(
+            class_="search-results-list__item-type").text
+
+        return attrs
+
+    def next_page_url(self, start_at: int) -> Generator[str, None, None]:
+        for i in range(start_at, 100):
+            yield str(i)
+
+
+MIRRORS = {
+    'https://ambry.pw': AmbryPw,
+    'http://gen.lib.rus.ec': GenLibRusEc,
+    'https://libgen.pw': LibGenPw
+}
 """
 Dictionary of available mirrors from where to download files.
 """

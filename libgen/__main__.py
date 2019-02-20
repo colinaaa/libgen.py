@@ -16,6 +16,7 @@ class MirrorFinder(object):
             mirror = self.find_active_mirror()
             if mirror is None:
                 raise NoAvailableMirror
+            print(f'running on mirror{mirror}')
             mirror(search_term).run()
         except NoAvailableMirror as e:
             print(e)
@@ -32,7 +33,8 @@ class MirrorFinder(object):
 
 def main():
     p = argparse.ArgumentParser(description='Read more, kids.')
-    p.add_argument('-s', '--search', dest='search', required=True, help='search term')
+    p.add_argument(
+        '-s', '--search', dest='search', required=True, help='search term')
     args = p.parse_args()
     MirrorFinder().run(args.search)
 
