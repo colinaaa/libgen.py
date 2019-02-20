@@ -16,16 +16,13 @@ from . import downloaders
 from .exceptions import CouldntFindDownloadUrl, NoResults
 from .publication import Publication
 
-RE_ISBN = re.compile(
-    r"(ISBN[-]*(1[03])*[ ]*(: ){0,1})*" +
-    r"(([0-9Xx][- ]*){13}|([0-9Xx][- ]*){10})"
-)
+RE_ISBN = re.compile(r"(ISBN[-]*(1[03])*[ ]*(: ){0,1})*" +
+                     r"(([0-9Xx][- ]*){13}|([0-9Xx][- ]*){10})")
 
 RE_EDITION = re.compile(r"(\[[0-9] ed\.\])")
 
 
 class Mirror(ABC):
-
     def __init__(self, search_url: str) -> None:
         self.search_url = search_url
 
@@ -37,7 +34,8 @@ class Mirror(ABC):
 
     @staticmethod
     # @ensure('length of each value list in values is the same has the number of header values', lambda r: all(map(lambda x: len(x) == len(r[0]), r[1])))
-    def get_headers_values(publications: List[Publication]) -> Tuple[List[str], List[List[Any]]]:
+    def get_headers_values(publications: List[Publication]
+                           ) -> Tuple[List[str], List[List[Any]]]:
         # headers should not include 'mirrors'
         headers = set()
         values = []
@@ -64,7 +62,8 @@ class Mirror(ABC):
         except NoResults as e:
             print(e)
 
-    def search(self, start_at: int = 1) -> Generator[bs4.BeautifulSoup, None, None]:
+    def search(self,
+               start_at: int = 1) -> Generator[bs4.BeautifulSoup, None, None]:
         """
         Yield result pages for a given search term.
 
@@ -72,14 +71,16 @@ class Mirror(ABC):
         :returns: BeautifulSoup4 object representing a result page
         """
         if len(self.search_term) < 3:
-            raise ValueError('Your search term must be at least 3 characters long.')
+            raise ValueError(
+                'Your search term must be at least 3 characters long.')
 
         print(f"Searching for: '{self.search_term}'")
 
         for page_url in self.next_page_url(start_at):
             r = requests.get(page_url)
             if r.status_code == 200:
-                publications = self.extract(BeautifulSoup(r.text, 'html.parser'))
+                publications = self.extract(
+                    BeautifulSoup(r.text, 'html.parser'))
 
                 if not publications:
                     raise NoResults
@@ -111,7 +112,11 @@ class Mirror(ABC):
         print(tabulate.tabulate(values, headers, 'fancy_grid'))
         while True:
             try:
-                choice = input('Choose publication by ID: ')
+                choice = input(
+                    'Choose publication by ID (enter "next" to get next page): '
+                )
+                if choice == 'next':
+                    return None
                 publications = [p for p in publications if p.id == choice]
                 if not publications:
                     raise ValueError
@@ -191,8 +196,7 @@ class GenLibRusEc(Mirror):
             if RE_ISBN.search(et) is not None:
                 # A list of ISBNs
                 attrs['isbn'] = [
-                    RE_ISBN.search(N).group(0)
-                    for N in et.split(",")
+                    RE_ISBN.search(N).group(0) for N in et.split(",")
                     if RE_ISBN.search(N) is not None
                 ]
             elif RE_EDITION.search(et) is not None:
@@ -221,10 +225,10 @@ class GenLibRusEc(Mirror):
 
         # TODO: each of these _url can be None
         attrs['mirrors'] = {
-                'libgen.io': downloaders.LibgenIoDownloader(libgen_io_url),
-                'libgen.pw': downloaders.LibgenPwDownloader(libgen_pw_url),
-                'b-ok.org': downloaders.BOkOrgDownloader(bok_org_url),
-                'bookfi.net': downloaders.BookFiNetDownloader(bookfi_net_url)
+            'libgen.io': downloaders.LibgenIoDownloader(libgen_io_url),
+            'libgen.pw': downloaders.LibgenPwDownloader(libgen_pw_url),
+            'b-ok.org': downloaders.BOkOrgDownloader(bok_org_url),
+            'bookfi.net': downloaders.BookFiNetDownloader(bookfi_net_url)
         }
         return attrs
 
@@ -241,8 +245,7 @@ class LibGenPw(Mirror):
         raise NotImplementedError
 
 
-MIRRORS = {'http://gen.lib.rus.ec': GenLibRusEc,
-           'https://libgen.pw': LibGenPw}
+MIRRORS = {'http://gen.lib.rus.ec': GenLibRusEc, 'https://libgen.pw': LibGenPw}
 """
 Dictionary of available mirrors from where to download files.
 """
