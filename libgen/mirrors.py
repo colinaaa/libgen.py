@@ -141,7 +141,7 @@ class Mirror(ABC):
         :param publication: a Publication
         """
         for (n, mirror) in publication.mirrors.items():
-            # print(f"About to try {n}\n")
+            print(f"About to try {n}\n")
             try:
                 mirror.download_publication(publication)
                 break  # stop if successful
@@ -170,7 +170,7 @@ class GenLibRusEc(Mirror):
         for pn in itertools.count(start_at):
             yield f"{self.search_url}{self.search_term}&page={str(pn)}"
 
-    def extract(self, page):
+    def extract(self, page: bs4.BeautifulSoup) -> List[Publication]:
         """Extract all the publications info in a given result page.
 
         :param page: result page as an BeautifulSoup4 object
@@ -187,7 +187,7 @@ class GenLibRusEc(Mirror):
     def extract_attributes(self, cells) -> Dict[str, Any]:
         attrs = {}
         attrs['id'] = cells[0].text
-        attrs['authors'] = cells[1].text.strip()
+        attrs['authors'] = cells[1].text.strip()[:25]
 
         # The 2nd cell contains title information
         # In best case it will have: Series - Title - Edition - ISBN
@@ -211,14 +211,13 @@ class GenLibRusEc(Mirror):
             el.extract()
 
         # Worst case: just fill everything in the title field
-        attrs['title'] = cells[2].text.strip()
-
-        attrs['publisher'] = cells[3].text
-        attrs['year'] = cells[4].text
-        attrs['pages'] = cells[5].text
-        attrs['lang'] = cells[6].text
-        attrs['size'] = cells[7].text
-        attrs['extension'] = cells[8].text
+        # attrs['publisher'] = cells[3].text
+        # attrs['pages'] = cells[5].text
+        # attrs['lang'] = cells[6].text
+        attrs['title'] = cells[2].text.strip()[:80]
+        attrs['year'] = cells[4].text[:5]
+        attrs['size'] = cells[7].text[:5]
+        attrs['extension'] = cells[8].text[:5]
 
         libgen_io_url = Mirror.get_href(cells[9])
         libgen_pw_url = Mirror.get_href(cells[10])
