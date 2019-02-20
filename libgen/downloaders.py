@@ -11,7 +11,7 @@ from .utils import random_string
 
 
 class MirrorDownloader(ABC):
-    def __init__(self, url: str, timeout: int = 10) -> None:
+    def __init__(self, url: str, timeout: int = 30) -> None:
         """Constructs a new MirrorDownloader.
 
         :param url: URL from where to try to download file
@@ -37,7 +37,7 @@ class MirrorDownloader(ABC):
         save_file(filename, data)
 
     @abc.abstractmethod
-    def get_download_url(self, html) -> Optional[str]:
+    def get_download_url(self, html: BeautifulSoup) -> Optional[str]:
         """Returns the URL from where to download the
         file or None if it can't find the URL."""
         raise NotImplementedError
@@ -45,6 +45,7 @@ class MirrorDownloader(ABC):
 
 class LibgenIoDownloader(MirrorDownloader):
     """MirrorDownloader for 'libgen.io'."""
+
     def __init__(self, url: str) -> None:
         super().__init__(url)
 
@@ -55,6 +56,7 @@ class LibgenIoDownloader(MirrorDownloader):
 
 class LibgenPwDownloader(MirrorDownloader):
     """MirrorDownloader for 'libgen.pw'."""
+
     def __init__(self, url: str) -> None:
         super().__init__(url)
 
@@ -70,6 +72,7 @@ class LibgenPwDownloader(MirrorDownloader):
 
 class BOkOrgDownloader(MirrorDownloader):
     """MirrorDownloader for 'b-ok.org'."""
+
     def __init__(self, url: str) -> None:
         super().__init__(url)
 
@@ -80,6 +83,7 @@ class BOkOrgDownloader(MirrorDownloader):
 
 class BookFiNetDownloader(MirrorDownloader):
     """MirrorDownloader for 'bookfi.net'."""
+
     def __init__(self, url: str) -> None:
         super().__init__(url)
 
