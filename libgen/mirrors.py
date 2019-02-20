@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 from requests.exceptions import Timeout
 
 from . import downloaders
-from .exceptions import CouldntFindDownloadUrl, NoResults
+from .exceptions import CouldntFindDownloadUrl, NoResults, NoAvailableMirror
 from .publication import Publication
 
 RE_ISBN = re.compile(r"(ISBN[-]*(1[03])*[ ]*(: ){0,1})*" +
@@ -86,6 +86,8 @@ class Mirror(ABC):
                     raise NoResults
                 else:
                     yield publications
+            else:
+                raise NoAvailableMirror
 
     @abc.abstractmethod
     def next_page_url(self, start_at: int) -> Generator[str, None, None]:
